@@ -78,11 +78,11 @@ function mobileFullscreen()
     }
 }
 
-function clearCanvas()
+function clearCanvas(color)
 {
 	var canvas = document.getElementById("gamearea");
 	var ctx = canvas.getContext('2d');
-	ctx.fillStyle = 'white';
+	ctx.fillStyle = color;
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 

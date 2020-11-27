@@ -29,7 +29,7 @@ class Actor{
 		this.animFrameDiff = 0;
 		this.state='idle';
 		this.frameLength = 5;
-		this.friction = 0.92;
+		this.friction = 0.80;
         this.no_keys=0;
         this.isPressed={};
 
@@ -66,8 +66,8 @@ class Actor{
     }
 
     update(){
-        var xModifier = 0.3;
-        var yModifier = 0.5;
+        var xModifier = 0.4;
+        var yModifier = 0.4;
         if (this.isPressed[37]) {
             this.dx-=xModifier;
         }
@@ -88,6 +88,11 @@ class Actor{
         if(this.y<20 && this.dy<0|| this.y>=this.canvas.height-20 && this.dy>0){
             this.dy=0;
         }
+
+        // interact with level objects, walls
+        // get cell and position inside cell
+        //let cellIdx = this.y/L1.cell
+        //L1.interact(this.x, this)
 
         this.dx*=this.friction;
         this.dy*=this.friction;
@@ -154,7 +159,7 @@ function gameLoop(currentTime) {
 
     let delta = currentTime - lastTime;
 
-	clearCanvas();
+	clearCanvas("rgb(20,20,0)");
 
     render();
 
