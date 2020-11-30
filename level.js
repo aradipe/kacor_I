@@ -220,6 +220,7 @@ class Level {
         this.hero=undefined;
         this.cells=[];
         this.objects=[];
+        this.messages=[];
         this.guards=[];
         this.start=0;
         this.tileToCell={};
@@ -349,6 +350,7 @@ class Level {
         let m = new MessageObject();
         this.cells[pos] = ['m', m];
         this.objects.push(m);
+        this.messages.push(m);
     }
 
     setLayout(layout) {
@@ -420,6 +422,10 @@ class Level {
                 }
             }
             x++;
+        }
+        //@todo hack, show messages
+        for (let m of this.messages) {
+            m.draw(ctx);
         }
     }
 

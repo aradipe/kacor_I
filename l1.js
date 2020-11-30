@@ -41,8 +41,8 @@ function l1init(){
 
     L1.init();
 
-    L1.objects[0].messages=[new Message(1000,4000, "You're in prison for not bowing deep enough"), //@todo put this in l1
-                            new Message(5100,4000, "before the king's carriage on the street")];
+    L1.objects[0].messages=[new Message(1000,3000, "You're in prison for not bowing deep enough"), //@todo put this in l1
+                            new Message(4100,3000, "before the king's carriage on the street")];
     L1.bg_music.loop=true;
 }
 
