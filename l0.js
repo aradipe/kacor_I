@@ -12,7 +12,7 @@ function l0init(){
                             new Message(11800,4000, "His name is Kacor, the first")];
 
     L0.completed=true;
-    L0.objects[1].endAtMs=16000;
+    L0.objects[1].endAtMs=1600;
 }
 
 l0init();

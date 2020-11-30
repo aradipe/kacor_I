@@ -239,7 +239,10 @@ class Level {
         this.tileToCell['d']=this.parseDoor.bind(this);
         this.tileToCell['m']=this.parseMessage.bind(this);
         this.tileToCell['E']=this.parseEnd.bind(this);
+        this.tileToCell['g']=this.parseGuard.bind(this);
+        this.tileToCell['h']=this.parseGuard.bind(this);
         this.tileToCell['s']=this.setStart.bind(this);
+
         this.initWalls(this.name);
         this.initFloor(this.name);
         this.parseLayout();
@@ -323,6 +326,13 @@ class Level {
         }
 
         this.cells[pos] = [type, undefined];
+    }
+
+    parseGuard(pos) {
+        let x=pos%this.w*this.cellsize_px;
+        let y=Math.floor(pos/this.w)*this.cellsize_px;
+        let g=new Actor('guard', 20, 40, x+15, y+15);
+        this.guards.push(g);
     }
 
     parseFloor(pos) {

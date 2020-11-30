@@ -13,7 +13,7 @@ class GameCtx {
         this.activeLevel;
         this.levelIdx; // set this to the same level for restart
 
-        this.actors=[];
+        this.guards=[];
         this.frameCnt = 0;
         this.onEnded=function(l){};
         this.fadeout=0;
@@ -76,6 +76,8 @@ class GameCtx {
 
         let fadeoutOpacity=0.2;
         let fadeOutComplete=this.fadeOutComplete.bind(this);
+
+        this.guards=l.guards;
 
         if(l.hero) {
             this.player=l.hero;
@@ -144,10 +146,20 @@ class GameCtx {
             if (this.player) {
             this.player.update(currentTime);
             }
+            if (this.guards) {
+                for (let g of this.guards) {
+                    g.update(currentTime);
+                }
+            }
         }
         //console.log("rendering level");
         this.activeLevel.draw(this.ctx, true);
         if (this.player) { this.player.draw(this.ctx);}
+        if (this.guards) {
+            for (let g of this.guards) {
+                g.draw(this.ctx);
+            }
+        }
 
         if (this.fadeout)
         {
