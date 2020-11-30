@@ -1,6 +1,5 @@
 'use strict';
 var assetCnt = 0;
-var frameCnt = 0;
 
 /*
  * Easing Functions - inspired from http://gizma.com/easing/
@@ -57,11 +56,12 @@ function loadImg(path){
 
 function mobileFullscreen()
 {
-	var canvas = document.getElementById("gamearea");
+	let canvas = document.getElementById("gamearea");
     //const isMobileDevice = window.navigator.userAgent.toLowerCase().includes("mobi");
     if (1 )//|| isMobileDevice)
     {
         function launchIntoFullscreen(element) {
+        canvas.style.border="none";
         if(element.requestFullscreen) {
               element.requestFullscreen();
             } else if(element.mozRequestFullScreen) {
@@ -80,8 +80,8 @@ function mobileFullscreen()
 
 function clearCanvas(color)
 {
-	var canvas = document.getElementById("gamearea");
-	var ctx = canvas.getContext('2d');
+	let canvas = document.getElementById("gamearea");
+	let ctx = canvas.getContext('2d');
 	ctx.fillStyle = color;
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
@@ -126,14 +126,14 @@ function drawImage(context, img, x, y, width, height, deg, flip, flop, center) {
 
 function loadMoveAnim(name, no_of_frames)
 {
-		var animFrames = new Object();
+		let animFrames = new Object();
 		animFrames.running=[];
 		animFrames.idle=[];
 		//animFrames.idle.push(loadImg(`../../assets/img/${name}.png`));
-		for (var i=1; i<no_of_frames+1; i++){
+		for (let i=1; i<no_of_frames+1; i++){
 			animFrames.idle.push(loadImg(`assets/img/${name}_s${i}.png`));
 		}
-		for (var i=1; i<no_of_frames+1; i++){
+		for (let i=1; i<no_of_frames+1; i++){
 			animFrames.running.push(loadImg(`assets/img/${name}_m${i}.png`));
 		}
 		return animFrames;

@@ -1,6 +1,6 @@
 
 let l1Layout = `\
---------III------IwIIwIII-----\
+m-------III------IwIIwIII-----\
 -IIIIIIIIgIIIIIIII     lIIIII-\
 -IIIIIIII IIIIIIII     IIIIII-\
 -IIIIIIII      III IIIIIIIIII-\
@@ -17,22 +17,36 @@ let l1Layout = `\
 ------------------------------\
 `;
 
-var L1 = new Level(30, 15, 32, 'l1');
+var L1 = new Level(30, 15, 32, 'l1', "#222222", "assets/sounds/l1_loop.mp3");
 
-L1.setLayout(l1Layout);
+function l1init(){
+    L1.setLayout(l1Layout);
 
-function parse0(pos) {
-    let o = new LevelObject('0');
-    o.interact= function(pos,player,level) {
-        player.no_keys+=1;
-        //@todo: need message popup
-        console.log(`player has ${player.no_keys} key(s)`);
-    };
-    this.cells[pos] = ['0', o];
-    this.objects.push(o);
+    function parse0(pos) {
+        let o = new LevelObject('0');
+        o.interact= function(pos,player,level) {
+            player.no_keys+=1;
+            //@todo: need message popup
+            console.log(`player has ${player.no_keys} key(s)`);
+        };
+        this.cells[pos] = ['0', o];
+        this.objects.push(o);
+    }
+
+    L1.tileToCell['0']=parse0.bind(L1);
+
+    let x=L1.startPosPx()[0];
+    let y=L1.startPosPx()[1];
+    L1.hero=new Actor('guy', 20, 40, x, y);
+
+    L1.init();
+
+    L1.objects[0].messages=[new Message(1000,4000, "You're in prison for not bowing deep enough"), //@todo put this in l1
+                            new Message(5100,4000, "before the king's carriage on the street")];
+    L1.bg_music.loop=true;
 }
 
-L1.tileToCell['0']=parse0.bind(L1);
+l1init();
 //
 //s: start
 //w: window

@@ -1,135 +1,187 @@
 'use strict';
 
-var lastTime = 0;
-var fps = 60;
-var frametimeMs = 1000 / fps;
+var gFps = 60;
+var gLevels=[L0,L1];
 
-var actors = [];
-var a;
+class GameCtx {
+    constructor(){
+        this.player;
+        this.canvas = document.getElementById("gamearea");
+        this.ctx = this.canvas.getContext('2d');
 
-var context;
+        this.levels;
+        this.activeLevel;
+        this.levelIdx; // set this to the same level for restart
 
-class Actor{
-    constructor(name, width, height, x, y){
-        this.height = height;
-        this.width = width;
-        this.x = x;
-        this.y = y;
-        this.dx = 0.0;
-        this.dy = 0.0;
-        var canvas = document.getElementById("gamearea");
-        var ctx = canvas.getContext('2d');
-        this.canvas = canvas;
-        this.ctx = ctx;
-		this.name = name;
-		this.noOfFrames = 3;
-		this.imgFrames = loadMoveAnim(name, 3);
-		this.animFrame = 0;
-		this.animFrameDelta = 1;
-		this.animFrameDiff = 0;
-		this.state='idle';
-		this.frameLength = 5;
-		this.friction = 0.80;
-        this.no_keys=0;
-        this.isPressed={};
-
-		//this.img = loadImg("../../assets/img/pavement_test.png");
+        this.actors=[];
+        this.frameCnt = 0;
+        this.onEnded=function(l){};
+        this.fadeout=0;
+        this.fadeoutOpacity=0.2;
+        this.noMusic=true;
+        this.doUpdate=false;
     }
 
-	pressed(keyCode){
-		console.log(keyCode);
-        this.isPressed[keyCode]=true;
-		//this.dx=clampMe(this.dx,step,modifier*3);
-	}
-    released(keyCode){
-        this.isPressed[keyCode]=false;
-		//this.dx=clampMe(this.dx,step,modifier*3);
-	}
 
-    draw(){
-        // this controls the speed of the run / idle animations
-		var fdelta = Math.abs(this.dx) > 0.8 ? 2: this.state=='idle' ? 0.1 : 1.6;
-		this.animFrameDiff+=fdelta;
-		if(this.animFrameDiff >= this.frameLength){
-			this.animFrameDiff = 0;
-			this.animFrame+=this.animFrameDelta;
-		}
-
-		var flip = false;
-		if(this.dx <0){ flip = true;}
-        this.ctx.save();
-        this.ctx.shadowColor = "rgba(100,100,100,0.5)";
-        this.ctx.shadowOffsetX  = flip ? 8 : -8;
-		drawImage(this.ctx, this.imgFrames[this.state][this.animFrame], this.x, this.y, this.width, this.height, 0, flip, false, true);
-		this.ctx.restore();
-		this.animFrame == this.noOfFrames-1? this.animFrameDelta = -1 : (this.animFrame == 0 ? this.animFrameDelta =1 : ()=>{});
+    reset() {
+        this.frameCnt=0;
+        this.fadeout=0;
+        this.fadeoutOpacity=0.2;
+        this.activeLevel=undefined;
+        this.noMusic=true;
+        this.actors=[];
     }
 
-    update(){
-        var xModifier = 0.4;
-        var yModifier = 0.4;
-        if (this.isPressed[37]) {
-            this.dx-=xModifier;
-        }
-        if (this.isPressed[39]) {
-            this.dx+=xModifier;
-        }
-        if (this.isPressed[38]) {
-            this.dy-=yModifier;
-        }
-        if (this.isPressed[40]) {
-            this.dy+=yModifier;
+    setDoUpdate(val) {
+        this.doUpdate=val;
+    }
+
+    // returns when level ended
+    startLevel(i){
+        this.levelIdx=i;
+        let l=this.levels[i];
+        this.activeLevel=l;
+//        this.ctx.fillStyle = "rgba(255,255,255,255)";
+        l.ended=this.onLevelEnded.bind(this,l);
+        l.setGctx(this);
+//        l.ended();
+        let ctx=this.ctx;
+        let canvas=this.canvas;
+        let frameCnt=this.frameCnt;
+        let doUpdate=false;
+        let fadeout=this.fadeout;
+
+        canvas.addEventListener("click", this.setDoUpdate.bind(this, true));
+
+        console.log("starting level");
+
+        let fadeoutOpacity=0.2;
+        let fadeOutComplete=this.fadeOutComplete.bind(this);
+        // the main game loop
+        // responsible for update and render
+        /*
+        function gameLoop(currentTime){
+            if (frameCnt < 60) {
+                let opacity=frameCnt%60;
+                ctx.fillStyle=`rgba(255,255,255,${opacity})`;
+                ctx.fillRect(0,0,canvas.width, canvas.height);
+            }
+
+            //if (!this.activeLevel) { return; } // level ended
+            if(doUpdate){
+                console.log("updating level");
+                l.update(currentTime);
+            }
+            //console.log("rendering level");
+            l.draw(ctx, true);
+
+            if (fadeout)
+            {
+                ctx.fillStyle=`rgba(255,255,255,${fadeoutOpacity})`;
+                ctx.fillRect(0,0,canvas.width, canvas.height);
+                fadeoutOpacity*=1.2;
+                if(l.bg_music) {
+                    l.bg_music.volume*=0.85;
+                }
+                if(fadeoutOpacity >= 1) {
+                    if(l.bg_music && l.bg_music >=0.2) { }
+                    else {
+                        fadeOutComplete();
+                        return;
+                    }
+                }
+            }
+
+            frameCnt++;
+            window.requestAnimationFrame(gameLoop);
+        }*/
+        window.requestAnimationFrame(this.gameLoop.bind(this));
+    }
+    // the main game loop
+    // responsible for update and render
+    gameLoop(currentTime){
+        if (this.frameCnt < 60) {
+            let opacity=this.frameCnt%60;
+            this.ctx.fillStyle=`rgba(255,255,255,${opacity})`;
+            this.ctx.fillRect(0,0,this.canvas.width, this.canvas.height);
         }
 
-        // stop around edge of canvas
-        if(this.x<20 && this.dx<0|| this.x>=this.canvas.width-20 && this.dx>0) {
-            this.dx=0;
+        //if (!this.activeLevel) { return; } // level ended
+        if(this.doUpdate){
+            console.log("updating level");
+            if(this.noMusic) {
+                if(this.activeLevel.bg_music){
+                        this.activeLevel.bg_music.play();
+                }
+            }
+            this.activeLevel.update(currentTime);
         }
-        if(this.y<20 && this.dy<0|| this.y>=this.canvas.height-20 && this.dy>0){
-            this.dy=0;
+        //console.log("rendering level");
+        this.activeLevel.draw(this.ctx, true);
+
+        if (this.fadeout)
+        {
+            this.ctx.fillStyle=`rgba(255,255,255,${this.fadeoutOpacity})`;
+            //this.ctx.fillStyle="rgba(255,255,255,0.2)";
+            this.ctx.fillRect(0,0,this.canvas.width, this.canvas.height);
+            this.fadeoutOpacity*=1.2;
+            if(this.activeLevel.bg_music) {
+                this.activeLevel.bg_music.volume*=0.80;
+            }
+            if(this.fadeoutOpacity >= 1) {
+                if(this.activeLevel.bg_music) {
+                    if (this.activeLevel.bg_music.volume >=0.2) { }
+                    else {this.activeLevel.bg_music.pause();}
+                    }
+                }
+                else {
+                    this.fadeOutComplete();
+                    return;
+                }
         }
 
-        // interact with level objects, walls
-        // get cell and position inside cell
-        //let cellIdx = this.y/L1.cell
-        //L1.interact(this.x, this)
+        this.frameCnt++;
+        window.requestAnimationFrame(this.gameLoop.bind(this));
+    }
 
-        this.dx*=this.friction;
-        this.dy*=this.friction;
 
-        this.x+=this.dx;
-        this.y+=this.dy;
-        if(this.dx>0.3 || this.dx <-0.3 ||
-           this.dy>0.3 || this.dy <-0.3){
-            this.state='running';
-        } else {this.state='idle';}
+
+    // called by level
+    onLevelEnded(l) {
+        console.log("level ended");
+        this.fadeout=1; // call requestAnimationFrame in a loop until dark
+    }
+
+    fadeOutComplete() {
+        let i = this.levelIdx;
+        if(this.activeLevel.completed) {
+            i++;
+        } // else we restart the same level
+        this.reset();
+        this.startLevel(i);
+    }
+
+    timeSec() { //@todo don't think I need this
+        return round(this.frameCnt / gFps, 5);
     }
 }
 
 var onLoad = function (){
-    let canvas = document.getElementById("gamearea");
-    context = canvas.getContext('2d');
+    console.log("game loaded");
     mobileFullscreen();
-    let x=L1.startPosPx()[0];
-    let y=L1.startPosPx()[1];
-    a = new Actor('guy', 20, 40, x, y);
-    actors.push(a);
-    window.addEventListener("keydown", keydown, true);
-    window.addEventListener("keyup", keyup, true);
-    window.requestAnimationFrame(gameLoop);
-}
+    let gameCtx = new GameCtx();
+    gameCtx.levels=gLevels;
+    gameCtx.startLevel(0);
 
 
-function keydown(key)
-{
-	a.pressed(key.keyCode);
-}
-function keyup(key)
-{
-    a.released(key.keyCode);
+//    let x=L1.startPosPx()[0];
+//    let y=L1.startPosPx()[1];
+
+//    window.addEventListener("keydown", keydown, true);
+//    window.addEventListener("keyup", keyup, true);
+//    window.requestAnimationFrame(gameLoop);
 }
 
-L1.init();
 
 if (
     document.readyState === "complete" ||
@@ -155,7 +207,7 @@ function update(delta)
     }
 }
 
-function gameLoop(currentTime) {
+function loop(currentTime) {
 
     let delta = currentTime - lastTime;
 
@@ -168,5 +220,5 @@ function gameLoop(currentTime) {
 
     lastTime = currentTime;
 	//frameCnt++;
-    window.requestAnimationFrame(gameLoop);
+    window.requestAnimationFrame(loop);
 }
