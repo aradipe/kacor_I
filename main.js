@@ -30,10 +30,29 @@ class GameCtx {
         this.activeLevel=undefined;
         this.noMusic=true;
         this.actors=[];
+        this.canvas.removeEventListener("click", this.setDoUpdate.bind(this, true));
+        if (this.player) {
+
+        }
     }
 
     setDoUpdate(val) {
         this.doUpdate=val;
+    }
+
+    keyDown( key ) {
+        if (this.doUpdate==false) {
+            setDoUpdate(true);
+        }
+        if (this.player) {
+            this.player.pressed(key.keyCode);
+        }
+    }
+
+    keyUp( key ) {
+        if (this.player) {
+            this.player.released(key.keyCode);
+        }
     }
 
     // returns when level ended
@@ -57,6 +76,12 @@ class GameCtx {
 
         let fadeoutOpacity=0.2;
         let fadeOutComplete=this.fadeOutComplete.bind(this);
+
+        if(l.hero) {
+            this.player=l.hero;
+            window.addEventListener("keydown", this.keyDown.bind(this), true);
+            window.addEventListener("keyup", this.keyUp.bind(this), true);
+        }
         // the main game loop
         // responsible for update and render
         /*
@@ -113,11 +138,16 @@ class GameCtx {
                 if(this.activeLevel.bg_music){
                         this.activeLevel.bg_music.play();
                 }
+                //@todo check .loop works! this.noMusic=false;
             }
             this.activeLevel.update(currentTime);
+            if (this.player) {
+            this.player.update(currentTime);
+            }
         }
         //console.log("rendering level");
         this.activeLevel.draw(this.ctx, true);
+        if (this.player) { this.player.draw(this.ctx);}
 
         if (this.fadeout)
         {

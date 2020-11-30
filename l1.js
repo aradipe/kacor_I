@@ -35,11 +35,11 @@ function l1init(){
 
     L1.tileToCell['0']=parse0.bind(L1);
 
+    L1.init();
+
     let x=L1.startPosPx()[0];
     let y=L1.startPosPx()[1];
     L1.hero=new Actor('guy', 20, 40, x, y);
-
-    L1.init();
 
     L1.objects[0].messages=[new Message(1000,3000, "You're in prison for not bowing deep enough"), //@todo put this in l1
                             new Message(4100,3000, "before the king's carriage on the street")];
